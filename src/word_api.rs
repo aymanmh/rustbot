@@ -26,9 +26,7 @@ impl WordAPI
     pub async fn get(&self, word: &String) -> Result<word::WORDRESULT, ExitFailure>
     {
         let mut headers = HeaderMap::new();
-        println!("inside function");
-        //headers.insert("content-type","application/x-www-form-urlencoded".parse().unwrap());
-        //headers.insert("accept-encoding","application/gzip".parse().unwrap());
+
         headers.insert("x-rapidapi-key",self.api_key.parse().unwrap());
         headers.insert("x-rapidapi-host","wordsapiv1.p.rapidapi.com".parse().unwrap());
         headers.insert("useQueryString","true".parse().unwrap());

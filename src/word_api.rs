@@ -1,48 +1,49 @@
-
-use reqwest::header::HeaderMap;
-use serde::{Deserialize, Serialize};
-use std::collections::HashMap;
 use exitfailure::ExitFailure;
-//mod word_structure;
+use reqwest::header::HeaderMap;
+use std::env;
 
-use super::word;
+use super::word_result;
 
-pub struct WordAPI 
-{
-    api_url:String,
-    api_key:String
-}
+pub async fn get(word: &String) -> Result<word_result::WORDRESULT, ExitFailure> {
+//pub async fn get(word: &String) -> Result<(), ExitFailure> {
+    let api_key = env::var("rapid_api_key").unwrap();
+    let mut api_url = String::from("https://wordsapiv1.p.rapidapi.com/words/");
+    assert_ne!(api_key, "");
 
-impl WordAPI
-{
-    pub fn new(url:String, key:String) -> Self
+    let mut headers = HeaderMap::new();
+
+    headers.insert("x-rapidapi-key", api_key.parse().unwrap());
+    headers.insert("x-rapidapi-host","wordsapiv1.p.rapidapi.com".parse().unwrap());
+    headers.insert("useQueryString", "true".parse().unwrap());
+
+    if !word.is_empty()
     {
-        WordAPI
-        {
-            api_url:url,
-            api_key:key
-        }
+        api_url.push_str(word);
     }
-    pub async fn get(&self, word: &String) -> Result<word::WORDRESULT, ExitFailure>
+    else
     {
-        let mut headers = HeaderMap::new();
+        api_url.push_str("?random=true");
+    }
+    println!("{}",api_url);
 
-        headers.insert("x-rapidapi-key",self.api_key.parse().unwrap());
-        headers.insert("x-rapidapi-host","wordsapiv1.p.rapidapi.com".parse().unwrap());
-        headers.insert("useQueryString","true".parse().unwrap());
-
-        let mut getURL = self.api_url.clone();
-        getURL.push_str(word);
-
-        let result = reqwest::Client::new()
-        .get(getURL)
+    let result = reqwest::Client::new()
+        .get(api_url)
         .headers(headers)
-        //.form(&map)
-        //.send().await?.json::<serde_json::Value>().await?;
-        .send().await?.json::<word::WORDRESULT>().await?;
+        .send()
+        .await?.json::<word_result::WORDRESULT>().await?;
+    //println!("{}",result.status());
 
-        //println!("{:#?}", result);
+    //let serade_res = result.json::<word_result::WORDRESULT>()
+    //    .await;
+    //let serade_res = result.json::<serde_json::Value>()
+    //    .await?;
+    //println!("{:?}",serade_res);
 
-        Ok(result)
-    }
+    //println!("{}",serade_res.pronunciation.all);
+    //let result3 = result.json::<serde_json::Value>()
+     //   .await?;
+    //println!("{:?}",serade_res);
+    //let serade_res:word_result::WORDRESULT = serde_json::from_value(result3);
+    Ok(result)
+    //Ok(())
 }
